@@ -6,6 +6,7 @@
 #include "buffer.h"
 #include "bplus.h"
 #include "index.h"
+#include "databaseManager.h"
 using namespace std;
 
 const int MAX_TABLE_NUM = 32;
@@ -16,6 +17,28 @@ const int MAX_TABLE_NUM = 32;
 int main() {
 
 
+	DatabaseManager DB;
+
+
+	DB.dbInsert("123 16 5.3");
+	DB.dbFindTable("123")->tablePrint();
+	cout << "===========================" << endl;
+	DB.dbSearch("123#0 1 10 1 1").tablePrint();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/*
 	Table* tptr;
 	Table T("123.txt");
 	tptr = &T;
@@ -30,7 +53,7 @@ int main() {
 	cout << "===========================" << endl;
 	T.tableInsert("5 2");
 	T.tablePrint();
-	T.tableWrite();
+	T.tableWrite();*/
 
 
 
@@ -38,17 +61,6 @@ int main() {
 	
 	system("pause");
 	return 0;
-}
-
-
-
-void SQLinit() {
-
-
-
-
-
-
 }
 
 

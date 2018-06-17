@@ -167,7 +167,10 @@ Table DatabaseManager::dbSearch(string opcode) {
 		//如果有相应的index，那么通过index搜索
 		tempIndex = dbFindIndex(temp->name, attrNovalue);
 		if (tempIndex != NULL) {
-			
+			if (higherstring == "NOT_EXIST")
+				temp = &(tempIndex->indexSearch(lowervalue));
+			else
+				temp = &(tempIndex->indexSearch(lowervalue, highervalue));
 		}
 
 		//如果没有相应的index，那么就直接搜索

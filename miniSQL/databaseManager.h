@@ -34,12 +34,10 @@ public:
 
 	void selfCheck();
 
-private:
-
 	Table* dbFindTable(string tableName);
 	Index* dbFindIndex(string indexBaseTableName, int attrNoValue);
 
-
+private:
 
 	vector<Table*> tableVector;
 	vector<Index*> indexVector;
