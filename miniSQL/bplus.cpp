@@ -431,19 +431,26 @@ BPlusNode* BPlusNode::recursiveRemove(BPlusNode* parent, KeyType keyValue, int f
 }
 
 
-KeyType BPlusNode::findKey(KeyType keyValue) {
-	for (int i = 0; i < keyNum; i++) {
-		if (children[i]->isLeaf()) {
-			for (int j = 0; j < children[i]->keyNum; j++) {
-				if (children[i]->key[j] == keyValue) {
-					return children[i]->key[j];
-				}
+BPlusNode* BPlusNode::findKey(KeyType keyValue) {
+	int i;
+
+	for (i = 0; i < keyNum; i++) {
+		if (children[i]->key[0] > keyValue)
+			break;
+	}
+	i--;
+
+	if (children[i]->isLeaf()) {
+		for (int j = 0; j < children[i]->keyNum; j++) {
+			if (children[i]->key[j] == keyValue) {
+				return children[i];
 			}
 		}
-		else {
-			return children[i]->findKey(keyValue);
-		}
 	}
+	else {
+		return children[i]->findKey(keyValue);
+	}
+	
 }
 
 
@@ -485,7 +492,7 @@ void BPlusTree::treeRemove(KeyType keyValue) {
 	return;
 }
 
-KeyType BPlusTree::treeSearch(KeyType keyValue) {
+BPlusNode* BPlusTree::treeSearch(KeyType keyValue) {
 	return root->findKey(keyValue);
 }
 

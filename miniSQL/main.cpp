@@ -21,7 +21,7 @@ int main() {
 	tptr = &T;
 	T.tablePrint();
 	cout << T.name << endl;
-	cout << T.unique[0] << ";" << T.unique[1] << endl;
+	cout << T.head.next->recordNum << ";" << endl;
 	cout << "===========================" << endl;
 	T.searchTable(1, 2, 5, false, false).tablePrint();
 	cout << "===========================" << endl;

@@ -24,8 +24,8 @@ public:
 	Table(string fileNameValue);
 	~Table();
 	
-	virtual Table searchTable(int attrNo, string attrValue);//返回符合条件的tuple组成的虚拟表的指针
-	virtual Table searchTable(int attrNo, double lower, double higher, bool equal1, bool equal2);
+	Table searchTable(int attrNo, string attrValue);//返回符合条件的tuple组成的虚拟表的指针
+	Table searchTable(int attrNo, double lower, double higher, bool equal1, bool equal2);
 	Table joinTable(Table& T);//笛卡儿积
 	
 	void tableInsert(string toAdd);//直接操作buffer

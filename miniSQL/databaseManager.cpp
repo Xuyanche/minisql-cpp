@@ -30,24 +30,29 @@ void DatabaseManager::recieveOpcode(string opcode) {
 	}
 	else if (temp == "10") {
 		//create table
+		dbCreateTable(opcode);
 	}
 	else if (temp == "11") {
 		//drop table
 	}
 	else if (temp == "20") {
 		//create index
+		dbCreateIndex(opcode);
 	}
 	else if (temp == "21") {
 		//drop index
 	}
 	else if (temp == "30") {
 		//select
+		dbSearch(opcode);
 	}
 	else if (temp == "40") {
 		//insert log
+		dbInsert(opcode);
 	}
 	else if (temp == "41") {
 		//delete log
+		dbDelete(opcode);
 	}
 	else if (temp == "99") {
 		//error
@@ -95,37 +100,51 @@ bool DatabaseManager::dbInsert(string opcode) {
 }
 
 
-
-
-
-
 bool DatabaseManager::dbDelete(string opcode) {
-	//opcode: 41
+	//opcode: 41 tableName#attr1 lower1 higher1 equal1 equal2
+	string tableName, opcopy = opcode;
+	tableName = getNextWord(opcopy);
+	Table* sourceTable = dbFindTable(tableName);
+	if (sourceTable == NULL)
+		return false;
+	sourceTable->tableDelete(&dbSearch(opcode));
+	return true;
 
 }
 
 
-
-void DatabaseManager::dbSearch(string opcode) {
+Table DatabaseManager::dbSearch(string opcode) {
 	//opcode: 30 tableName tableName2#attr1 lower1 higher1 equal11 equal12
 	//如果指定的是相等的值，那么higher就是NOT_EXIST
 	
-	array<string, MAX_SEARCH_TABLENUM> tableName;
-	string attrName, lowerstring, higherstring, equal1string, equal2string;
+	string attrName, lowerstring, higherstring, equal1string, equal2string, seperator;
 	int attrNovalue, lowervalue, highervalue;
 	bool equal1value, equal2value;
 	stringstream ss;
 	array<Table*, MAX_SEARCH_TABLENUM> sourceTable;
 	Table* temp = NULL;
+	Index* tempIndex = NULL;
+	int i = 0;
 
 
-
-
-
-
-	if (tableToOperate == NULL)
-		return;
-	temp = tableToOperate;
+	while (i < MAX_SEARCH_TABLENUM) {
+		sourceTable[i] = dbFindTable(getNextWord(opcode, seperator));
+		i++;
+		if (seperator == "#" || sourceTable[i] == NULL)
+			break;
+	}
+	if (i > 1) {
+		temp = &(sourceTable[0]->joinTable(*sourceTable[1]));
+		for (i = 2; i < MAX_SEARCH_TABLENUM; i++) {
+			if (sourceTable[i] == NULL)
+				break;
+			temp = &(temp->joinTable(*sourceTable[i]));
+		}
+	}
+	else if (i == 1)
+		temp = sourceTable[0];
+	else
+		return *temp;
 	while (true) {
 		attrName = getNextWord(opcode);
 		lowerstring = getNextWord(opcode);
@@ -145,7 +164,13 @@ void DatabaseManager::dbSearch(string opcode) {
 		ss >> highervalue;
 		equal1value = (equal1string == "1") ? true : false;
 		equal2value = (equal2string == "1") ? true : false;
+		//如果有相应的index，那么通过index搜索
+		tempIndex = dbFindIndex(temp->name, attrNovalue);
+		if (tempIndex != NULL) {
+			
+		}
 
+		//如果没有相应的index，那么就直接搜索
 		if (higherstring == "NOT_EXIST")
 			temp = &(temp->searchTable(attrNovalue, lowervalue, highervalue, equal1value, equal2value));
 		else
@@ -158,29 +183,57 @@ void DatabaseManager::dbSearch(string opcode) {
 		equal2string = "";
 	}
 
-
 	temp->tablePrint();
 	
+	return *temp;
+
+}
+
+
+
+Table* DatabaseManager::dbOpenTable(string tableName) {
+	Table* newtable = new Table(tableName + ".txt");
+	tableVector.push_back(newtable);
+	return newtable;
+}
+
+void DatabaseManager::dbCloseTable(string tableName) {
+	Table* tabletoclose = dbFindTable(tableName);
+	tabletoclose->tableWrite();
+	delete tabletoclose;
+	return;
+}
+
+
+void DatabaseManager::getTableOpened() {
+	int i;
+	cout << "tableName:" << endl;
+	for (i = 0; i < tableVector.size(); i++) {
+		cout << tableVector.at(i)->name << endl;
+	}
+	cout << "index:" << endl;
+	for (i = 0; i < indexVector.size(); i++) {
+		cout << indexVector.at(i)->baseTable->name << ";" << indexVector.at(i)->attrNo << endl;
+	}
+	return;
+}
+
+//等待完成，再打开的表过多的时候关闭一些
+void DatabaseManager::selfCheck() {
 	return;
 
 }
 
 
 
-
-
-
-
-
-
-
-
 Table* DatabaseManager::dbFindTable(string tableName) {
+	Table* find;
 	for (int i = 0; i < tableVector.size(); i++) {
 		if (tableVector.at(i)->name == tableName)
 			return tableVector.at(i);
 	}
-	return NULL;
+	find = dbOpenTable(tableName);
+	return find;
 }
 
 Index* DatabaseManager::dbFindIndex(string indexBaseTableName, int attrNoValue) {

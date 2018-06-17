@@ -36,7 +36,7 @@ public:
 	void printNode();
 	BPlusNode* findLeftMost();
 	BPlusNode* findRightMost();
-	KeyType findKey(KeyType keyValue);
+	BPlusNode* findKey(KeyType keyValue);
 
 
 	static BPlusNode* recursiveInsert(BPlusNode* T, KeyType Key, int i, BPlusNode* Parent);
@@ -74,7 +74,7 @@ public:
 
 	void treeInsert(KeyType keyValue);
 	void treeRemove(KeyType keyValue);
-	KeyType treeSearch(KeyType keyValue);
+	BPlusNode* treeSearch(KeyType keyValue);
 	void travel();
 	void clearTree();
 

@@ -57,12 +57,36 @@ void Index::refresh() {
 	return;
 }
 
-int Index::indexSearch(double searchValue) {
+Table& Index::indexSearch(double searchValue) {
 	Pair p(searchValue, INT_MIN);
-	BPlusTree temp;
+	Table result(baseTable);
+	BPlusNode* node = Tree->treeSearch(p);
+	int i;
+	for (i = 0; i < node->keyNum; i++) {
+		if (node->key[i] == p)
+			break;
+	}
+	result.tableInsert(baseTable->tableGetContent(node->key[i].position));
 
-	return Tree->treeSearch(p).position;
+	return result;
 }
 
+Table& Index::indexSearch(double lower, double higher) {
+	Pair plower(lower, INT_MIN), phigher(higher, INT_MIN);
+	Table result(baseTable);
+	BPlusNode* node = Tree->treeSearch(plower);
+	
+	while (node != NULL) {
+		for (int i = 0; i < node->keyNum; i++) {
+			if (node->key[i] >= plower && node->key[i] <= phigher)
+				result.tableInsert(baseTable->tableGetContent(node->key[i].position));
+			else if (node->key[i] > phigher)
+				break;
+		}
+		node = node->next;
+	}
 
+
+	return result;
+}
 

@@ -24,10 +24,15 @@ public:
 	bool dbCreateIndex(string opcode);
 	bool dbInsert(string opcode);
 	bool dbDelete(string opcode);
-	void dbSearch(string opcode);
+	Table dbSearch(string opcode);
 
 
+	void dbCloseTable(string tableName);
+	Table* dbOpenTable(string tableName);
 
+	void getTableOpened();
+
+	void selfCheck();
 
 private:
 
@@ -36,41 +41,10 @@ private:
 
 
 
-
-
-
 	vector<Table*> tableVector;
 	vector<Index*> indexVector;
 
-
-
-
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

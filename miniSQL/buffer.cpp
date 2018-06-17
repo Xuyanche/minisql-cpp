@@ -175,7 +175,10 @@ void BufferNode::bufferWrite(ostream& fs) {
 	BufferNode* focus = next;
 	while (focus != NULL) {
 		for (int i = 0; i < focus->recordNum; i++) {
-			fs << focus->content[i] << endl;
+			fs << focus->content[i];
+			if (focus->next == NULL && i == focus->recordNum - 1);
+			else
+				fs << endl;
 		}
 		focus = focus->next;
 	}
@@ -219,18 +222,6 @@ int BufferNode::getTotalRecordNum() {
 	return i;
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 void BufferNode::bufferPrint() {

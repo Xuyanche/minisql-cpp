@@ -23,7 +23,7 @@ Table::Table(Table* headcopy) {
 		unique[i] = headcopy->unique[i];
 	}
 	main = headcopy->main;
-	name = headcopy->name;
+	name = headcopy->name + "*";
 	fileName = headcopy->fileName;
 	dirtBit = true;
 }
@@ -190,7 +190,8 @@ Table Table::joinTable(Table& T) {
 
 	result.main = this->main;
 	result.fileName = "";
-	dirtBit = true;
+	result.dirtBit = true;
+	result.name = name + T.name;
 
 	for (i = 0; i < getTotalRecordNum(); i++) {
 		for (j = 0; j < T.getTotalRecordNum(); j++) {
@@ -202,8 +203,6 @@ Table Table::joinTable(Table& T) {
 	return result;
 
 }
-
-
 
 
 void Table::tableRead() {
@@ -294,7 +293,9 @@ void Table::tablePrint() {
 		cout << attrType[i] << ";";
 	}
 	cout << endl;
-	head.bufferPrint();
+	for (int i = 0; i < getTotalRecordNum(); i++) {
+		cout << tableGetContent(i) << endl;
+	}
 	return;
 }
 
