@@ -22,12 +22,13 @@ int main() {
 
 	DB.dbInsert("123 16 5.3");
 	DB.dbFindTable("123")->tablePrint();
+	DB.dbFindTable("456")->tablePrint();
 	cout << "===========================" << endl;
-	DB.dbSearch("123#0 1 10 1 1").tablePrint();
+	//DB.dbSearch("123 456#123.attr1 1 5 0 0 123.attr2 2 4 0 0");
+	DB.recieveOpcode("30 123 456#123.attr1 1 5 0 0 123.attr2 2 4 0 0");
 
 
-
-
+	//DB.dbFindTable("123")->searchTable(0, 1, 5, false, false).tablePrint();
 
 
 

@@ -24,6 +24,8 @@ public:
 	bool dbCreateIndex(string opcode);
 	bool dbInsert(string opcode);
 	bool dbDelete(string opcode);
+	bool dbDropIndex(string opcode);
+	bool dbDropTable(string opcode);
 	Table dbSearch(string opcode);
 
 

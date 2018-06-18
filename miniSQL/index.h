@@ -15,8 +15,8 @@ public:
 
 
 	void refresh();//重新生成B+树
-	Table& indexSearch(double searchValue);
-	Table& indexSearch(double lower, double higher);
+	Table indexSearch(double searchValue);
+	Table indexSearch(double lower, double higher);
 
 
 

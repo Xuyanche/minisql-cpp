@@ -57,7 +57,7 @@ void Index::refresh() {
 	return;
 }
 
-Table& Index::indexSearch(double searchValue) {
+Table Index::indexSearch(double searchValue) {
 	Pair p(searchValue, INT_MIN);
 	Table result(baseTable);
 	BPlusNode* node = Tree->treeSearch(p);
@@ -71,7 +71,7 @@ Table& Index::indexSearch(double searchValue) {
 	return result;
 }
 
-Table& Index::indexSearch(double lower, double higher) {
+Table Index::indexSearch(double lower, double higher) {
 	Pair plower(lower, INT_MIN), phigher(higher, INT_MIN);
 	Table result(baseTable);
 	BPlusNode* node = Tree->treeSearch(plower);

@@ -2,12 +2,10 @@
 
 Table::Table() {
 	header = "";
-	main = 0;
+	main = -1;
 	name = "";
 	fileName = "";
 	dirtBit = false;
-	attrName = new string[MAX_ATTR_NUM];
-	attrType = new string[MAX_ATTR_NUM];
 	for (int i = 0; i < MAX_ATTR_NUM; i++) {
 		unique[i] = false;
 	}
@@ -15,8 +13,6 @@ Table::Table() {
 
 Table::Table(Table* headcopy) {
 	header = headcopy->header;
-	attrName = new string[MAX_ATTR_NUM];
-	attrType = new string[MAX_ATTR_NUM];
 	for (int i = 0; i < MAX_ATTR_NUM; i++) {
 		attrName[i] = headcopy->attrName[i];
 		attrType[i] = headcopy->attrType[i];
@@ -30,8 +26,6 @@ Table::Table(Table* headcopy) {
 
 Table::Table(const Table& T) {
 	header = T.header;
-	attrName = new string[MAX_ATTR_NUM];
-	attrType = new string[MAX_ATTR_NUM];
 	for (int i = 0; i < MAX_ATTR_NUM; i++) {
 		attrName[i] =T.attrName[i];
 		attrType[i] = T.attrType[i];
@@ -49,8 +43,6 @@ Table::Table(string fileNameValue) {
 	header = "";
 	main = 0;
 	name = "";
-	attrName = new string[MAX_ATTR_NUM];
-	attrType = new string[MAX_ATTR_NUM];
 	for (int i = 0; i < MAX_ATTR_NUM; i++) {
 		unique[i] = false;
 	}
@@ -61,8 +53,7 @@ Table::Table(string fileNameValue) {
 
 
 Table::~Table() {
-	delete[]attrName;
-	delete[]attrType;
+
 	head.clear();
 }
 
@@ -115,6 +106,7 @@ Table Table::searchTable(int attrNo, string attrValue) {
 		}
 		focus = focus->next;
 	}
+	result.regenerateHeader();
 	return result;
 }
 
@@ -162,8 +154,63 @@ Table Table::searchTable(int attrNo, double lower, double higher, bool equal1, b
 		}
 		focus = focus->next;
 	}
+	result.regenerateHeader();
 	return result;
 }
+
+Table Table::searchTable(int attrNo1, int attrNo2) {
+	Table result(this);
+	int i = 0;
+	BufferNode* focus = head.next;
+	string attr1Value, attr2Value;
+	while (focus != NULL) {
+		for (i = 0; i < focus->recordNum; i++) {
+			attr1Value = BufferNode::getAttr(attrNo1, focus->content[i]);
+			attr2Value = BufferNode::getAttr(attrNo2, focus->content[i]);
+			if (attr1Value == attr2Value) {
+				result.tableInsert(focus->content[i]);
+			}
+		}
+		focus = focus->next;
+	}
+
+	result.regenerateHeader();
+	return result;
+
+
+}
+
+
+Table Table::selectTable(vector<int> attrNo) {
+	Table result;
+	string newcontent, origincontent;
+	int i, j;
+	result.name = name + "selected";
+	for (i = 0; i < attrNo.size(); i++) {
+		attrName[i] = attrName[attrNo.at(i)];
+		attrType[i] = attrType[attrNo.at(i)];
+		unique[i] = unique[attrNo.at(i)];
+	}
+	result.main = -1;
+	result.regenerateHeader();
+	result.dirtBit = true;
+	result.fileName = "";
+
+	for (i = 0; i < getTotalRecordNum(); i++) {
+		newcontent = "";
+		origincontent = tableGetContent(i);
+		for (j = 0; j < attrNo.size(); j++) {
+			newcontent.append(BufferNode::getAttr(attrNo.at(i), origincontent));
+			if (j < attrNo.size() - 1)
+				newcontent.append(" ");
+		}
+		result.tableInsert(newcontent);
+	}
+
+	return result;
+}
+
+
 
 
 
@@ -175,7 +222,7 @@ Table Table::joinTable(Table& T) {
 			break;
 		result.attrName[i] = name + "." + attrName[i];
 		result.attrType[i] = attrType[i];
-		result.unique[i] = unique[i];
+		result.unique[i] = false;
 	}
 	for (j = 0; j < MAX_ATTR_NUM; j++) {
 		if (T.attrName[j] == "")
@@ -184,18 +231,19 @@ Table Table::joinTable(Table& T) {
 			break;
 		result.attrName[i] = T.name + "." + T.attrName[j];
 		result.attrType[i] = T.attrType[j];
-		result.unique[i] = T.unique[i];
+		result.unique[i] = false;
 		i++;
 	}
 
-	result.main = this->main;
+	result.main = -1;
 	result.fileName = "";
 	result.dirtBit = true;
 	result.name = name + T.name;
+	result.regenerateHeader();
 
 	for (i = 0; i < getTotalRecordNum(); i++) {
 		for (j = 0; j < T.getTotalRecordNum(); j++) {
-			result.tableInsert(tableGetContent(i) + T.tableGetContent(j));
+			result.tableInsert(tableGetContent(i) + " " + T.tableGetContent(j));
 		}
 	}
 	
@@ -203,6 +251,22 @@ Table Table::joinTable(Table& T) {
 	return result;
 
 }
+
+
+void Table::regenerateHeader() {
+	string newheader = "01";
+	newheader.append(" " + name);
+	for (int i = 0; i < MAX_ATTR_NUM; i++) {
+		if (attrName[i] == "")
+			break;
+		newheader.append(" " + attrName[i] + " " + attrType[i] + " " + ((unique[i]) ? "1" : "0"));
+	}
+	newheader.append("#" + main);
+	header = newheader;
+	return;
+}
+
+
 
 
 void Table::tableRead() {
@@ -218,12 +282,41 @@ void Table::tableRead() {
 
 void Table::tableWrite() {
 	ofstream fs;
+	if (fileName == "") {
+		cout << "this table (" << name << ") cannot be written" << endl;
+		return;
+	}
 	fs.open(fileName);
+	regenerateHeader();
 	fs << header << endl;
 	head.bufferWrite(fs);
 	fs.close();
 	return;
 }
+
+
+Table& Table::operator=(const Table& T) {
+	header = T.header;
+	for (int i = 0; i < MAX_ATTR_NUM; i++) {
+		attrName[i] = T.attrName[i];
+		attrType[i] = T.attrType[i];
+		unique[i] = T.unique[i];
+	}
+	main = T.main;
+	name = T.name;
+	fileName = T.fileName;
+	dirtBit = true;
+	head.makeCopy(T.head);
+
+	return *this;
+}
+
+
+
+
+
+
+
 
 
 

@@ -29,33 +29,28 @@ void DatabaseManager::recieveOpcode(string opcode) {
 		//delete database
 	}
 	else if (temp == "10") {
-		//create table
-		dbCreateTable(opcode);
+		dbCreateTable(opcopy);//create table ----
 	}
 	else if (temp == "11") {
-		//drop table
+		dbDropTable(opcopy);//drop table----
 	}
 	else if (temp == "20") {
-		//create index
-		dbCreateIndex(opcode);
+		dbCreateIndex(opcode);//create index-----
 	}
 	else if (temp == "21") {
-		//drop index
+		dbDropIndex(opcopy);//drop index ----
 	}
 	else if (temp == "30") {
-		//select
-		dbSearch(opcode);
+		dbSearch(opcopy);//select----
 	}
 	else if (temp == "40") {
-		//insert log
-		dbInsert(opcode);
+		dbInsert(opcode);//insert log----
 	}
 	else if (temp == "41") {
-		//delete log
-		dbDelete(opcode);
+		dbDelete(opcode);//delete log---
 	}
 	else if (temp == "99") {
-		//error
+		cout << "opcode: error in reading operation sentence" << endl;
 	}
 
 
@@ -112,6 +107,57 @@ bool DatabaseManager::dbDelete(string opcode) {
 
 }
 
+bool DatabaseManager::dbDropIndex(string opcode) {
+	stringstream ss;
+	string tableName = getNextWord(opcode);
+	
+	int attrNo;
+	ss << opcode;
+	ss >> attrNo;
+	for (int i = 0; i < indexVector.size(); i++) {
+		if (indexVector.at(i)->baseTable->name == tableName && indexVector.at(i)->attrNo == attrNo) {
+			delete indexVector.at(i);
+			indexVector.at(i) = indexVector.at(indexVector.size() - 1);
+			indexVector.at(indexVector.size() - 1) = NULL;
+			return true;
+		}
+	}
+	return false;
+}
+
+
+bool DatabaseManager::dbDropTable(string opcode) {
+	//opcode: 21 tableName
+	Table* find;
+	for (int i = 0; i < tableVector.size(); i++) {
+		if (tableVector.at(i)->name == opcode) {
+			tableVector.at(i)->header.append("droped");
+			delete tableVector.at(i);
+			tableVector.at(i) = tableVector.at(tableVector.size() - 1);
+			tableVector.at(tableVector.size() - 1) = NULL;
+			return true;
+		}
+	}
+	return false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 Table DatabaseManager::dbSearch(string opcode) {
 	//opcode: 30 tableName tableName2#attr1 lower1 higher1 equal11 equal12
@@ -122,38 +168,37 @@ Table DatabaseManager::dbSearch(string opcode) {
 	bool equal1value, equal2value;
 	stringstream ss;
 	array<Table*, MAX_SEARCH_TABLENUM> sourceTable;
-	Table* temp = NULL;
+	Table temp;
 	Index* tempIndex = NULL;
 	int i = 0;
 
+	sourceTable.fill(NULL);
 
 	while (i < MAX_SEARCH_TABLENUM) {
 		sourceTable[i] = dbFindTable(getNextWord(opcode, seperator));
 		i++;
-		if (seperator == "#" || sourceTable[i] == NULL)
+		if (seperator == "#" || sourceTable[i-1] == NULL)
 			break;
 	}
 	if (i > 1) {
-		temp = &(sourceTable[0]->joinTable(*sourceTable[1]));
+		temp = sourceTable[0]->joinTable(*sourceTable[1]);
 		for (i = 2; i < MAX_SEARCH_TABLENUM; i++) {
 			if (sourceTable[i] == NULL)
 				break;
-			temp = &(temp->joinTable(*sourceTable[i]));
+			temp = temp.joinTable(*sourceTable[i]);
 		}
 	}
 	else if (i == 1)
-		temp = sourceTable[0];
+		temp = *sourceTable[0];
 	else
-		return *temp;
+		return temp;
 	while (true) {
 		attrName = getNextWord(opcode);
 		lowerstring = getNextWord(opcode);
 		higherstring = getNextWord(opcode);
 		equal1string = getNextWord(opcode);
 		equal2string = getNextWord(opcode);
-		if (equal2string == "")
-			break;
-		attrNovalue = temp->getAttrNo(attrName);
+		attrNovalue = temp.getAttrNo(attrName);
 		ss.str("");
 		ss.clear();
 		ss << lowerstring;
@@ -165,31 +210,32 @@ Table DatabaseManager::dbSearch(string opcode) {
 		equal1value = (equal1string == "1") ? true : false;
 		equal2value = (equal2string == "1") ? true : false;
 		//如果有相应的index，那么通过index搜索
-		tempIndex = dbFindIndex(temp->name, attrNovalue);
+		tempIndex = dbFindIndex(temp.name, attrNovalue);
 		if (tempIndex != NULL) {
-			if (higherstring == "NOT_EXIST")
-				temp = &(tempIndex->indexSearch(lowervalue));
+			if (higherstring != "NOT_EXIST")
+				temp = tempIndex->indexSearch(lowervalue);
 			else
-				temp = &(tempIndex->indexSearch(lowervalue, highervalue));
+				temp = tempIndex->indexSearch(lowervalue, highervalue);
 		}
-
-		//如果没有相应的index，那么就直接搜索
-		if (higherstring == "NOT_EXIST")
-			temp = &(temp->searchTable(attrNovalue, lowervalue, highervalue, equal1value, equal2value));
-		else
-			temp = &(temp->searchTable(attrNovalue, lowerstring));
-
+		else {
+			//如果没有相应的index，那么就直接搜索
+			if (higherstring != "NOT_EXIST")
+				temp = temp.searchTable(attrNovalue, lowervalue, highervalue, equal1value, equal2value);
+			else
+				temp = temp.searchTable(attrNovalue, lowerstring);
+		}
 		attrName = "";
 		lowerstring = "";
 		higherstring = "";
 		equal1string = "";
 		equal2string = "";
+		if (opcode == "")
+			break;
 	}
 
-	temp->tablePrint();
+	temp.tablePrint();
 	
-	return *temp;
-
+	return temp;
 }
 
 
@@ -201,12 +247,17 @@ Table* DatabaseManager::dbOpenTable(string tableName) {
 }
 
 void DatabaseManager::dbCloseTable(string tableName) {
-	Table* tabletoclose = dbFindTable(tableName);
-	tabletoclose->tableWrite();
-	delete tabletoclose;
+	Table* find;
+	for (int i = 0; i < tableVector.size(); i++) {
+		if (tableVector.at(i)->name == tableName) {
+			delete tableVector.at(i);
+			tableVector.at(i) = tableVector.at(tableVector.size() - 1);
+			tableVector.at(tableVector.size() - 1) = NULL;
+			return;
+		}
+	}
 	return;
 }
-
 
 void DatabaseManager::getTableOpened() {
 	int i;
