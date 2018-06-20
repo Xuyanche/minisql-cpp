@@ -25,6 +25,5 @@ string getNextWord(string& readString, string delim, string& seperator);
 
 
 
-void distribute(string opcode);
 
 #endif // !INTERPRETOR_H

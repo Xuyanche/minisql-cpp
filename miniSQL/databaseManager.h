@@ -38,6 +38,7 @@ public:
 
 	Table* dbFindTable(string tableName);
 	Index* dbFindIndex(string indexBaseTableName, int attrNoValue);
+	Index* dbFindIndex(string indexnamevalue);
 
 private:
 

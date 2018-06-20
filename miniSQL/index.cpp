@@ -15,7 +15,7 @@ Index::Index(Table* T, int attrNoValue) {
 	baseTable = T;
 	attrNo = attrNoValue;
 	Tree = new BPlusTree();
-	
+	indexname = T->name + ":" + T->attrName[attrNoValue];
 
 	for (int i = 0; i < T->getTotalRecordNum(); i++) {
 		contentReading = T->tableGetContent(i);

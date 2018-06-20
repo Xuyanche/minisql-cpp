@@ -25,7 +25,7 @@ int main() {
 	DB.dbFindTable("456")->tablePrint();
 	cout << "===========================" << endl;
 	//DB.dbSearch("123 456#123.attr1 1 5 0 0 123.attr2 2 4 0 0");
-	DB.recieveOpcode("30 123 456#123.attr1 1 5 0 0 123.attr2 2 4 0 0");
+	DB.recieveOpcode("30 123 456#123.attr1 456.attr2#123.attr1 1 5 0 0 123.attr2 2 4 0 0");
 
 
 	//DB.dbFindTable("123")->searchTable(0, 1, 5, false, false).tablePrint();

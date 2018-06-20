@@ -187,9 +187,9 @@ Table Table::selectTable(vector<int> attrNo) {
 	int i, j;
 	result.name = name + "selected";
 	for (i = 0; i < attrNo.size(); i++) {
-		attrName[i] = attrName[attrNo.at(i)];
-		attrType[i] = attrType[attrNo.at(i)];
-		unique[i] = unique[attrNo.at(i)];
+		result.attrName[i] = attrName[attrNo.at(i)];
+		result.attrType[i] = attrType[attrNo.at(i)];
+		result.unique[i] = unique[attrNo.at(i)];
 	}
 	result.main = -1;
 	result.regenerateHeader();
@@ -200,7 +200,11 @@ Table Table::selectTable(vector<int> attrNo) {
 		newcontent = "";
 		origincontent = tableGetContent(i);
 		for (j = 0; j < attrNo.size(); j++) {
-			newcontent.append(BufferNode::getAttr(attrNo.at(i), origincontent));
+			if (attrNo.at(j) < 0) {
+				result = *this;
+				return result;
+			}
+			newcontent.append(BufferNode::getAttr(attrNo.at(j), origincontent));
 			if (j < attrNo.size() - 1)
 				newcontent.append(" ");
 		}

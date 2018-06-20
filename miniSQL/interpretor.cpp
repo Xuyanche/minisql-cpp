@@ -5,16 +5,7 @@ static string englishLowerCharacter = "abcdefghijklmnopqrstuvwxyz";
 static string englishUpperCharacter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static string number = "1234567890";
 
-/*
 
-
-string getInst() {
-	string inst;
-	getline(cin, inst, ';');
-	inst = stringCheck("inst", inst);
-	return inst;
-}
-*/
 string stringCheck(string type, string toBeChecked) {
 	int i;
 	string allow;
@@ -219,7 +210,7 @@ string createInterpret(string inst) {
 
 
 string getNextWord(string& readString, string& seperator) {
-	string allow = englishLowerCharacter + englishUpperCharacter + number + "_.";
+	string allow = englishLowerCharacter + englishUpperCharacter + number + "_.*";
 	int temp = readString.find_first_not_of(allow);
 	string word;
 
@@ -248,7 +239,7 @@ string getNextWord(string& readString, string& seperator) {
 
 
 string getNextWord(string& readString) {
-	string allow = englishLowerCharacter + englishUpperCharacter + number + "_.";
+	string allow = englishLowerCharacter + englishUpperCharacter + number + "_.*";
 	string word;
 	int temp = readString.find_first_not_of(allow);
 
@@ -288,62 +279,55 @@ string getNextWord(string& readString, string delim, string& seperator) {
 }
 
 
+string interpret(string input) {
+	string opcode;
+	string firstword = getNextWord(input), secondword;
+	if (firstword == "create") {
+		secondword = getNextWord(input);
+		if (secondword == "table") {
+			//create table
+			opcode = "10";
+		}
+		else if (secondword == "index") {
+			opcode = "20";
+			
+			
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-void insertInterpret(string inst) {
-	//insert TableName value(attr1, attr2, attr3);
-	string instcopy = inst, temp;
-	string result = "40 ";
-
-	temp = getNextWord(instcopy);
-	result = result + temp + "#";
-
-	temp = getNextWord(instcopy);
-	temp = getNextWord(instcopy);
-
-	while (temp != "") {
-		result = result + " " + temp;
-		temp = getNextWord(instcopy);
+		}
+		else {
+			opcode = "99";
+		}
 	}
-	
+	else if (firstword == "drop") {
+		secondword = getNextWord(input);
+		if (secondword == "table") {
+			//drop table
+		}
+		else if (secondword == "index") {
+			//drop index
+		}
+		else {
+			opcode = "99";
+		}
+	}
+	else if (firstword == "insert") {
+		
+	}
+	else if (firstword == "select") {
 
+	}
+	else if (firstword == "delete") {
+		
+	}
+	else {
+		opcode = "99";
+	}
 
-	return;
+	return opcode;
 
 }
-*/
-
-
-void distribute(string opcode) {
-	
-
-	string opcopy = opcode;
-
-
-	return;
-}
-
-
-
-
 

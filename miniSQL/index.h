@@ -21,7 +21,7 @@ public:
 
 
 
-
+	string indexname;
 	Table* baseTable;
 	int attrNo;
 	BPlusTree* Tree;
