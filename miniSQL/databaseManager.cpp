@@ -44,10 +44,10 @@ void DatabaseManager::recieveOpcode(string opcode) {
 		dbSearch(opcopy);//select----
 	}
 	else if (temp == "40") {
-		dbInsert(opcode);//insert log----
+		dbInsert(opcopy);//insert log----
 	}
 	else if (temp == "41") {
-		dbDelete(opcode);//delete log---
+		dbDelete(opcopy);//delete log---
 	}
 	else if (temp == "99") {
 		cout << "opcode: error in reading operation sentence" << endl;
@@ -118,7 +118,7 @@ bool DatabaseManager::dbDropIndex(string opcode) {
 	ss << opcode;
 	ss >> attrNo;
 	for (int i = 0; i < indexVector.size(); i++) {
-		if (indexVector.at(i)->baseTable->name == tableName && indexVector.at(i)->attrNo == attrNo) {
+		if (indexVector.at(i)->indexname == tableName) {
 			delete indexVector.at(i);
 			indexVector.at(i) = indexVector.at(indexVector.size() - 1);
 			indexVector.pop_back();
@@ -149,7 +149,7 @@ bool DatabaseManager::dbDropTable(string opcode) {
 
 
 Table DatabaseManager::dbSearch(string opcode) {
-	//opcode: 30 tableName tableName2#attr1 lower1 higher1 equal11 equal12
+	//opcode: 30 tableName tableName2#attrlist attrrlist2#attr1 lower1 higher1 equal11 equal12
 	//如果指定的是相等的值，那么higher就是NOT_EXIST
 	
 	string attrName, lowerstring, higherstring, equal1string, equal2string, seperator;

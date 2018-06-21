@@ -16,10 +16,20 @@ const int MAX_TABLE_NUM = 32;
 
 int main() {
 
+	string opcode, input;
+	DatabaseManager DB;	
 
-	DatabaseManager DB;
+	opcode = interpret("insert 123 18 2.35");
+	//opcode = interpret("select 123.attr1 456.attr2 from 123 456 where 123.attr1>5 and 465.attr2<=3");
+	//opcode = interpret("create table tablename(attr1 int, attr2 float main)");
+	//opcode = interpret("create index indexname on tablename attrname");
+	//opcode = interpret("drop table tablename;");
+	//opcode = interpret("drop index indexname");
+	cout << opcode << endl;
+	DB.recieveOpcode(opcode);
+	DB.dbFindTable("123")->tablePrint();
 
-
+/*
 	DB.dbInsert("123 16 5.3");
 	DB.dbFindTable("123")->tablePrint();
 	DB.dbFindTable("456")->tablePrint();
@@ -39,7 +49,7 @@ int main() {
 
 
 
-	/*
+	
 	Table* tptr;
 	Table T("123.txt");
 	tptr = &T;

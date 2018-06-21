@@ -1,0 +1,6 @@
+insert 123 18 2.35
+select 123.attr1 456.attr2 from 123 456 where 123.attr1>5 and 465.attr2<=3
+create table tablename(attr1 int, attr2 float main)
+create index indexname on tablename attrname
+drop table tablename;
+drop index indexname

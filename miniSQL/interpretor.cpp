@@ -21,7 +21,7 @@ string stringCheck(string type, string toBeChecked) {
 		}
 	}
 	else if (type == "inst") {
-		allow = englishLowerCharacter + englishUpperCharacter + number + "_(),*+-/|&;\n\t ";
+		allow = englishLowerCharacter + englishUpperCharacter + number + " ,().<>=*;";
 		string valid = englishLowerCharacter + englishUpperCharacter + number;
 		for (i = 0; i < toBeChecked.length(); i++) {
 			if (allow.find(toBeChecked[i]) == string::npos) {
@@ -49,6 +49,16 @@ string stringCheck(string type, string toBeChecked) {
 					toBeChecked.erase(i, 1);
 					i--;
 				}
+			}
+		}
+	}
+	else if (type == "value") {
+		allow = number + ".";
+		for (i = 0; i < toBeChecked.length(); i++) {
+			if (allow.find(toBeChecked[i]) == string::npos) {
+				cout << "invalid character found" << endl;
+				toBeChecked.erase(i, 1);
+				i--;
 			}
 		}
 	}
@@ -237,7 +247,6 @@ string getNextWord(string& readString, string& seperator) {
 	return word;
 }
 
-
 string getNextWord(string& readString) {
 	string allow = englishLowerCharacter + englishUpperCharacter + number + "_.*";
 	string word;
@@ -259,7 +268,6 @@ string getNextWord(string& readString) {
 	return word;
 }
 
-
 string getNextWord(string& readString, string delim, string& seperator) {
 	string word;
 	int temp = readString.find_first_of(delim);
@@ -278,25 +286,72 @@ string getNextWord(string& readString, string delim, string& seperator) {
 	return word;
 }
 
+string peekNextWord(string readString) {
+	string allow = englishLowerCharacter + englishUpperCharacter + number + "_.*";
+	string word;
+	int temp = readString.find_first_not_of(allow);
+
+	if (temp == string::npos) {
+		word = readString;
+		readString = "";
+		return word;
+	}
+	word = readString.substr(0, temp);
+	return word;
+}
+
+
+
 
 string interpret(string input) {
-	string opcode;
-	string firstword = getNextWord(input), secondword;
+	input = stringCheck("inst", input);
+	string opcode, temp, seperator;
+	string firstword = getNextWord(input), secondword, main;
 	if (firstword == "create") {
 		secondword = getNextWord(input);
 		if (secondword == "table") {
-			//create table
-			opcode = "10";
+			//create table tablename(attrlist);
+			opcode = "10 ";
+			opcode.append(getNextWord(input));//tablename
+			while (true) {
+				if (input == "")
+					break;
+				temp = getNextWord(input);
+				if (main == "")
+					main = temp;
+				opcode.append(" " + temp);//attrname
+				opcode.append(" " + getNextWord(input, seperator));//attrtype
+				if (seperator == ",") {
+					opcode.append(" 0");
+					continue;
+				}
+				else if (peekNextWord(input) == "unique") {
+					opcode.append(" 1");//unique=1
+					getNextWord(input);
+				}
+				else if (peekNextWord(input) == "main") {
+					opcode.append(" 1");//unique=1
+					getNextWord(input);
+					main = temp;
+				}
+				else {
+					opcode.append(" 0");//unique=0
+				}
+			}
+			opcode.append("#" + main);
 		}
 		else if (secondword == "index") {
+			//create index indexname on tablename(attrlist);
 			opcode = "20";
-			
-			
-
-
-
-
-
+			opcode.append(" " + getNextWord(input));//indexname
+			getNextWord(input);//on
+			opcode.append(" " + getNextWord(input));//basetablename
+			while (true) {
+				if (input == "")
+					break;
+				temp = getNextWord(input);
+				opcode.append(" " + temp);//attrname
+			}
 		}
 		else {
 			opcode = "99";
@@ -305,23 +360,61 @@ string interpret(string input) {
 	else if (firstword == "drop") {
 		secondword = getNextWord(input);
 		if (secondword == "table") {
-			//drop table
+			//drop tablename
+			opcode = "11 " + input;
 		}
 		else if (secondword == "index") {
-			//drop index
+			//drop indexname
+			opcode = "21 " + input;
 		}
 		else {
 			opcode = "99";
 		}
 	}
 	else if (firstword == "insert") {
-		
+		//insert tablename tuple;
+		opcode = "40 " + input;
 	}
 	else if (firstword == "select") {
+		opcode = "30";
+		temp = "#";
+		while (true) {
+			if (peekNextWord(input) == "from" || input == "")
+				break;
+			if (temp.size() > 1)
+				temp.append(" ");
+			temp.append(getNextWord(input));//attrlist
+		}
+		getNextWord(input);//from
+		while (true) {
+			if (peekNextWord(input) == "where")
+				break;
+			opcode.append(" " + getNextWord(input));//tablename
+		}
+		opcode.append(temp + "#");
+		getNextWord(input);//where
+		int conditionflag = 0;
+		while (true) {
+			if (conditionflag == 1)
+				opcode.append(" ");
+			else
+				conditionflag = 1;
+			if (input == "")
+				break;
+			opcode.append(conditionInterpret(input));
+			if (peekNextWord(input) == "and")
+				getNextWord(input);
+		}
 
 	}
 	else if (firstword == "delete") {
-		
+		opcode.append("41 " + getNextWord(input));//tablename
+
+		while (true) {
+			if (input == "")
+				break;
+			opcode.append(" " + conditionInterpret(input));
+		}
 	}
 	else {
 		opcode = "99";
@@ -330,4 +423,59 @@ string interpret(string input) {
 	return opcode;
 
 }
+
+
+string conditionInterpret(string &inst) {
+	//只能是一个属性和固定值比
+	string operat = "<>=", instcopy;
+	string attrname, lower, upper, equal1, equal2, op;
+	int temp = inst.find("and");//用and分割
+
+	if (temp == string::npos) {
+		instcopy = inst;
+		inst = "";
+	}
+	else {
+		instcopy = inst.substr(0, temp);
+		inst = inst.substr(temp, string::npos);
+	}
+
+	
+	temp = instcopy.find_first_of(operat);
+	attrname = instcopy.substr(0, temp);
+	instcopy = instcopy.substr(temp, string::npos);
+	temp = instcopy.find_first_not_of(operat);
+	op = instcopy.substr(0, temp);
+	instcopy = instcopy.substr(temp, string::npos);
+	if (op == ">") {
+		equal1 = "0";
+		equal2 = "0";
+		upper = "NOT_EXIST";
+		lower = getNextWord(instcopy);
+	}
+	else if (op == "<") {
+		equal1 = "0";
+		equal2 = "0";
+		lower = "NOT_EXIST";
+		upper = getNextWord(instcopy);
+	}
+	else if (op == "<=") {
+		equal1 = "0";
+		equal2 = "1";
+		lower = "NOT_EXIST";
+		upper = getNextWord(instcopy);
+	}
+	else if (op == ">=") {
+		equal1 = "1";
+		equal2 = "0";
+		upper = "NOT_EXIST";
+		lower = getNextWord(instcopy);
+	}
+	else {
+		return "";
+	}
+
+	return attrname + " " + lower + " " + upper + " " + equal1 + " " + equal2;
+}
+
 
