@@ -20,7 +20,7 @@ Table::Table(Table* headcopy) {
 	}
 	main = headcopy->main;
 	name = headcopy->name + "*";
-	fileName = headcopy->fileName;
+	fileName = "";
 	dirtBit = true;
 }
 
@@ -38,10 +38,21 @@ Table::Table(const Table& T) {
 	head.makeCopy(T.head);
 }
 
+Table::Table(string header, int a) {
+	this->header = header;
+	main = -1;
+	for (int i = 0; i < MAX_ATTR_NUM; i++) {
+		unique[i] = false;
+	}
+	readHeader();
+	dirtBit = false;
+	fileName = name + ".txt";
+}
+
 
 Table::Table(string fileNameValue) {
 	header = "";
-	main = 0;
+	main = -1;
 	name = "";
 	for (int i = 0; i < MAX_ATTR_NUM; i++) {
 		unique[i] = false;
@@ -53,7 +64,8 @@ Table::Table(string fileNameValue) {
 
 
 Table::~Table() {
-
+	if (fileName != "")
+		this->tableWrite();
 	head.clear();
 }
 
@@ -187,6 +199,9 @@ Table Table::selectTable(vector<int> attrNo) {
 	int i, j;
 	result.name = name + "selected";
 	for (i = 0; i < attrNo.size(); i++) {
+		if (attrNo.at(i) < 0) {
+			return *this;
+		}
 		result.attrName[i] = attrName[attrNo.at(i)];
 		result.attrType[i] = attrType[attrNo.at(i)];
 		result.unique[i] = unique[attrNo.at(i)];
@@ -258,14 +273,18 @@ Table Table::joinTable(Table& T) {
 
 
 void Table::regenerateHeader() {
-	string newheader = "01";
+	string newheader = "01", mainstring;
+	stringstream ss;
 	newheader.append(" " + name);
 	for (int i = 0; i < MAX_ATTR_NUM; i++) {
 		if (attrName[i] == "")
 			break;
 		newheader.append(" " + attrName[i] + " " + attrType[i] + " " + ((unique[i]) ? "1" : "0"));
 	}
-	newheader.append("#" + main);
+	newheader.append("#");
+	ss << main;
+	ss >> mainstring;
+	newheader.append(mainstring);
 	header = newheader;
 	return;
 }
@@ -277,6 +296,7 @@ void Table::tableRead() {
 	ifstream fs;
 	fs.open(fileName);
 	getline(fs, header, '\n');
+	cout << header << endl;
 	readHeader();
 	head.clear();//如果head还在存储东西，把他清除
 	head.bufferRead(fs);
@@ -290,7 +310,7 @@ void Table::tableWrite() {
 		cout << "this table (" << name << ") cannot be written" << endl;
 		return;
 	}
-	fs.open(fileName);
+	fs.open(fileName, fstream::out);
 	regenerateHeader();
 	fs << header << endl;
 	head.bufferWrite(fs);
@@ -382,6 +402,7 @@ bool Table::isToInsertUnique(string toInsert, int uniqueAttrNo) {
 
 void Table::tablePrint() {
 	cout << header << endl;
+	cout << "main=" << main << endl;
 	for (int i = 0; i < MAX_ATTR_NUM; i++) {
 		cout << attrName[i] << ";";
 	}

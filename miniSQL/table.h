@@ -24,6 +24,7 @@ public:
 	Table(Table* headCopy);
 	Table(const Table& T);//copy
 	Table(string fileNameValue);
+	Table(string header, int a);
 	~Table();
 	
 	Table searchTable(int attrNo, string attrValue);//返回符合条件的tuple组成的虚拟表的指针

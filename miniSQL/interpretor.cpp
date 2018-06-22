@@ -22,7 +22,7 @@ string stringCheck(string type, string toBeChecked) {
 	}
 	else if (type == "inst") {
 		allow = englishLowerCharacter + englishUpperCharacter + number + " ,().<>=*;";
-		string valid = englishLowerCharacter + englishUpperCharacter + number;
+		string valid = englishLowerCharacter + englishUpperCharacter + number + "_*.";
 		for (i = 0; i < toBeChecked.length(); i++) {
 			if (allow.find(toBeChecked[i]) == string::npos) {
 				toBeChecked.erase(i, 1);
@@ -221,7 +221,6 @@ string createInterpret(string inst) {
 
 string getNextWord(string& readString, string& seperator) {
 	string allow = englishLowerCharacter + englishUpperCharacter + number + "_.*";
-	int temp = readString.find_first_not_of(allow);
 	string word;
 
 	//delete not allowed chracter in the front
@@ -229,7 +228,7 @@ string getNextWord(string& readString, string& seperator) {
 		readString.erase(0, 1);
 	}
 
-
+	int temp = readString.find_first_not_of(allow);
 	if (temp == string::npos) {
 		word = readString;
 		readString = "";
@@ -237,6 +236,13 @@ string getNextWord(string& readString, string& seperator) {
 		return word;
 	}
 	word = readString.substr(0, temp);
+
+	if (temp == readString.length() - 1) {
+		seperator = readString[temp];
+		readString = "";
+		return word;
+	}
+	
 	//cout << "2" << endl;
 	if (temp + 1 < readString.length() && temp > 0) {
 		seperator = readString[temp];
@@ -250,12 +256,12 @@ string getNextWord(string& readString, string& seperator) {
 string getNextWord(string& readString) {
 	string allow = englishLowerCharacter + englishUpperCharacter + number + "_.*";
 	string word;
-	int temp = readString.find_first_not_of(allow);
 
 	//delete not allowed chracter in the front
 	while (allow.find(readString[0]) == string::npos) {
 		readString.erase(0, 1);
 	}
+	int temp = readString.find_first_not_of(allow);
 	if (temp == string::npos) {
 		word = readString;
 		readString = "";
@@ -307,6 +313,7 @@ string interpret(string input) {
 	input = stringCheck("inst", input);
 	string opcode, temp, seperator;
 	string firstword = getNextWord(input), secondword, main;
+	vector<string> attrname;
 	if (firstword == "create") {
 		secondword = getNextWord(input);
 		if (secondword == "table") {
@@ -320,6 +327,7 @@ string interpret(string input) {
 				if (main == "")
 					main = temp;
 				opcode.append(" " + temp);//attrname
+				attrname.push_back(temp);
 				opcode.append(" " + getNextWord(input, seperator));//attrtype
 				if (seperator == ",") {
 					opcode.append(" 0");
@@ -338,6 +346,12 @@ string interpret(string input) {
 					opcode.append(" 0");//unique=0
 				}
 			}
+
+			for (int i = 0; i < attrname.size(); i++) {
+				if (attrname.at(i) == main)
+					main = to_string(i);
+			}
+
 			opcode.append("#" + main);
 		}
 		else if (secondword == "index") {
@@ -387,11 +401,13 @@ string interpret(string input) {
 		}
 		getNextWord(input);//from
 		while (true) {
-			if (peekNextWord(input) == "where")
+			if (peekNextWord(input) == "where" || input == "")
 				break;
 			opcode.append(" " + getNextWord(input));//tablename
 		}
 		opcode.append(temp + "#");
+		if (input == "")
+			return opcode;
 		getNextWord(input);//where
 		int conditionflag = 0;
 		while (true) {
@@ -409,11 +425,18 @@ string interpret(string input) {
 	}
 	else if (firstword == "delete") {
 		opcode.append("41 " + getNextWord(input));//tablename
-
+		int a = 0;
 		while (true) {
+			if (a == 0) {
+				a = 1;
+				opcode.append("#");
+			}
+			else {
+				opcode.append(" ");
+			}
 			if (input == "")
 				break;
-			opcode.append(" " + conditionInterpret(input));
+			opcode.append(conditionInterpret(input));
 		}
 	}
 	else {

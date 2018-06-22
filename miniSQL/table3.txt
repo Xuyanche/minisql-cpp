@@ -1,0 +1,1 @@
+01 table3 attr1 int 0 attr2 float 1#1

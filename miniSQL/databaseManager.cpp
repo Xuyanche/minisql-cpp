@@ -29,7 +29,7 @@ void DatabaseManager::recieveOpcode(string opcode) {
 		//delete database
 	}
 	else if (temp == "10") {
-		dbCreateTable(opcopy);//create table ----
+		dbCreateTable(opcode);//create table ----
 	}
 	else if (temp == "11") {
 		dbDropTable(opcopy);//drop table----
@@ -62,8 +62,8 @@ void DatabaseManager::recieveOpcode(string opcode) {
 
 
 bool DatabaseManager::dbCreateTable(string opcode) {
-	//opcode: 20 tablename attr0 type0 unique0....#main
-	Table* newtable = new Table(opcode);
+	//opcode: 10 tablename attr0 type0 unique0....#main
+	Table* newtable = new Table(opcode, 1);
 	if (newtable == NULL)
 		return false;
 	tableVector.push_back(newtable);
@@ -105,7 +105,12 @@ bool DatabaseManager::dbDelete(string opcode) {
 	Table* sourceTable = dbFindTable(tableName);
 	if (sourceTable == NULL)
 		return false;
-	sourceTable->tableDelete(&dbSearch(opcode));
+	string a = tableName + "#*#" + opcopy;
+	cout << a << endl;
+
+	Table* t = &dbSearch(a);
+
+	sourceTable->tableDelete(t);
 	return true;
 
 }
@@ -166,7 +171,8 @@ Table DatabaseManager::dbSearch(string opcode) {
 	sourceTable.fill(NULL);
 
 	while (i < MAX_SEARCH_TABLENUM) {
-		sourceTable[i] = dbFindTable(getNextWord(opcode, seperator));
+		string a = getNextWord(opcode, seperator);
+		sourceTable[i] = dbFindTable(a);
 		i++;
 		if (seperator == "#" || sourceTable[i-1] == NULL)
 			break;
@@ -194,6 +200,13 @@ Table DatabaseManager::dbSearch(string opcode) {
 		if (seperator == "#")
 			break;
 	}
+
+	if (opcode == "") {
+		temp.tablePrint();
+		return temp;
+	}
+
+
 
 	while (true) {
 		attrName = getNextWord(opcode);

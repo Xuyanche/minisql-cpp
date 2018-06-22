@@ -18,16 +18,61 @@ int main() {
 
 	string opcode, input;
 	DatabaseManager DB;	
+	bool adminopmode = false;
 
-	opcode = interpret("insert 123 18 2.35");
+	cout << setfill('=') << setw(40) << "=" << endl;
+	cout << "miniSQL by xuyancheng" << endl;
+	cout << "3160101851" << endl;
+	cout << setfill('=') << setw(40) << "=" << endl;
+
+	while (true) {
+		if (adminopmode) {
+			cout << "admin mode" << endl;
+			cout << ">>";
+			getline(cin, input, '\n');
+			if (input == "exit") {
+				cout << "exiting" << endl;
+				break;
+			}
+			else if (input == "greed is good") {
+				adminopmode = false;
+				continue;
+			}
+			DB.recieveOpcode(input);
+			continue;
+		}
+
+		cout << endl << "system ready" << endl;
+		cout << ">>";
+		getline(cin, input, '\n');
+		cout << endl << input << endl;
+		if (input == "exit") {
+			cout << "exiting" << endl;
+			break;
+		}
+		else if (input == "greed is good") {
+			adminopmode = true;
+			continue;
+		}
+		opcode = interpret(input);
+		cout << opcode << endl << endl;
+
+		DB.recieveOpcode(opcode);
+	}
+
+
+	//opcode = interpret("insert 123 18 2.35");
+
+	//opcode = interpret("delete 123 attr1>10");
 	//opcode = interpret("select 123.attr1 456.attr2 from 123 456 where 123.attr1>5 and 465.attr2<=3");
-	//opcode = interpret("create table tablename(attr1 int, attr2 float main)");
+	//opcode = interpret("create table tablename(attr1 int, attr2 float)");
+	//opcode = interpret("select * from 123");
 	//opcode = interpret("create index indexname on tablename attrname");
 	//opcode = interpret("drop table tablename;");
 	//opcode = interpret("drop index indexname");
-	cout << opcode << endl;
-	DB.recieveOpcode(opcode);
-	DB.dbFindTable("123")->tablePrint();
+	//cout << opcode << endl;
+	//DB.recieveOpcode(opcode);
+	//DB.dbFindTable("123")->tablePrint();
 
 /*
 	DB.dbInsert("123 16 5.3");

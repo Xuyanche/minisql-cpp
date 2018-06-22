@@ -1,0 +1,2 @@
+01 tablename attr1 int 0 attr2 float 0#0
+1 2

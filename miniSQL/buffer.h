@@ -24,7 +24,7 @@ public:
 	
 	void insertLog(string toAdd);//把记录插入到末尾
 	void deleteLog(int attrNo, string attrValue);
-	void deleteLog(BufferNode deleteHead);
+	void deleteLog(BufferNode& deleteHead);
 	//void updateLog(int attrNo, string oldValue, string newValue);
 
 	void bufferRead(istream& fs);//这时的fs已经越过了header的位置,使用前先清空

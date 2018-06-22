@@ -111,7 +111,7 @@ void BufferNode::deleteLog(int attrNo, string attrValue) {
 	return;
 }
 
-void BufferNode::deleteLog(BufferNode deleteHead) {
+void BufferNode::deleteLog(BufferNode& deleteHead) {
 	BufferNode* focus = next, *deleteFocus = deleteHead.next;
 	bool findFlag = false;
 	if (next == NULL || deleteHead.next == NULL) {
@@ -273,7 +273,7 @@ void BufferNode::rearrange() {
 
 
 void BufferNode::makeCopy(const BufferNode& copyHead) {
-	this->clear();
+	//this->clear();
 	BufferNode* focus = this, *copyFocus = copyHead.next, *lastFocus = NULL;
 
 	length = copyHead.length;
